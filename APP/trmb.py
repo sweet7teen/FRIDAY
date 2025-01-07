@@ -247,7 +247,7 @@ def connect_to_mysql(ip, password, formatwt, tanggal):
 # Contoh penggunaan
 if __name__ == "__main__":
     # Pengaturan database lokal
-    host_local = "localhost"
+    host_local = "192.168.26.78"
     user_local = "root"
     password_local = ""
     database_local = "lokal"

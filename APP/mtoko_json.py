@@ -4,7 +4,7 @@ import json
 
 # Koneksi ke DB lokal
 db_lokal = mysql.connector.connect(
-    host="localhost", user="root", password="", database="lokal"
+    host="192.168.26.78", user="root", password="", database="lokal"
 )
 
 cursor = db_lokal.cursor()
