@@ -125,6 +125,7 @@ def process_toko(toko, passwords, query, query_type, history):
                     csv_file_path = f"../RES/BC-CSV/hasil_query_toko_{toko_name}.csv"
                     df.to_csv(csv_file_path, index=False)
 
+                    status = "OK"
                     return csv_file_path, toko_name, status
 
                 elif query_type == "CRUD":
@@ -209,28 +210,80 @@ with ThreadPoolExecutor(max_workers=10) as executor:
         else:  # CRUD
             crud_log_entries.append(f"{toko_name},{status}")
 
+# # Gabungkan semua file CSV menjadi satu DataFrame
+# if csv_files:
+#     dataframes = [pd.read_csv(csv_file) for csv_file in csv_files]
+#     combined_df = pd.concat(dataframes, ignore_index=True)
+
+#     print("Eksport Excel")
+#     # Simpan hasil gabungan ke file Excel dengan satu sheet
+#     combined_df.to_excel(
+#         "../RES/XLS/hasil_query_toko.xlsx", index=False, sheet_name="AllData"
+#     )
+
+# # Simpan log ke file
+# with open("../RES/TXT/log.txt", "w") as log_file:
+#     log_file.write("TOKO,STATUS\n")
+#     log_file.write("\n".join(log_entries))
+
+# # Simpan log CRUD ke file
+# with open("../RES/TXT/log-crud.txt", "w") as crud_log_file:
+#     crud_log_file.write("TOKO,STATUS\n")
+#     crud_log_file.write("\n".join(crud_log_entries))
+
+def save_with_incremental_filename(directory, filename, content=None, is_excel=False):
+    base, ext = os.path.splitext(filename)
+    counter = 0
+    new_filename = filename
+
+    # Cari nama file yang belum ada
+    while os.path.exists(os.path.join(directory, new_filename)):
+        counter += 1
+        new_filename = f"{base}_{counter}{ext}"
+
+    # Simpan file (Excel atau teks)
+    full_path = os.path.join(directory, new_filename)
+    if is_excel:
+        content.to_excel(full_path, index=False, sheet_name="AllData")
+    else:
+        with open(full_path, "w") as file:
+            file.write(content)
+    return new_filename
+
 # Gabungkan semua file CSV menjadi satu DataFrame
 if csv_files:
     dataframes = [pd.read_csv(csv_file) for csv_file in csv_files]
     combined_df = pd.concat(dataframes, ignore_index=True)
 
-    print("Eksport Excel")
-    # Simpan hasil gabungan ke file Excel dengan satu sheet
-    combined_df.to_excel(
-        "../RES/XLS/hasil_query_toko.xlsx", index=False, sheet_name="AllData"
+    print()
+    # Simpan hasil gabungan ke file Excel dengan auto increment
+    excel_dir = "../RES/XLS"
+    excel_filename = "hasil_query_toko.xlsx"
+    saved_excel_filename = save_with_incremental_filename(
+        excel_dir, excel_filename, content=combined_df, is_excel=True
     )
+    print(f"Excel saved as: {saved_excel_filename}")
 
 # Simpan log ke file
-with open("../RES/TXT/log.txt", "w") as log_file:
-    log_file.write("TOKO,STATUS\n")
-    log_file.write("\n".join(log_entries))
+if query_type == "SELECT":
+    log_dir = "../RES/TXT"
+    log_filename = "log.txt"
+    log_content = "TOKO,STATUS\n" + "\n".join(log_entries)
+    saved_log_filename = save_with_incremental_filename(
+        log_dir, log_filename, content=log_content
+    )
+    print(f"Log saved as: {saved_log_filename}")
 
 # Simpan log CRUD ke file
-with open("../RES/TXT/log-crud.txt", "w") as crud_log_file:
-    crud_log_file.write("TOKO,STATUS\n")
-    crud_log_file.write("\n".join(crud_log_entries))
+if query_type == "CRUD":
+    crud_log_filename = "log-crud.txt"
+    crud_log_content = "TOKO,STATUS\n" + "\n".join(crud_log_entries)
+    saved_crud_log_filename = save_with_incremental_filename(
+        log_dir, crud_log_filename, content=crud_log_content
+    )
+    print(f"CRUD log saved as: {saved_crud_log_filename}")
 
 master_db.close()
 
-print("Proses selesai, hasil sudah disimpan di '../RES/XLS/hasil_query_toko.xlsx'")
-print("History password sudah disimpan di '../RES/JSON/history_pass.json'")
+# print("Proses selesai, hasil sudah disimpan di '../RES/XLS/hasil_query_toko.xlsx'")
+# print("History password sudah disimpan di '../RES/JSON/history_pass.json'")
