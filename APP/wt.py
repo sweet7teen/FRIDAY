@@ -122,58 +122,12 @@ for file_name in file_list:
             df = zipfile.Path(hr_result + hr, wt)
             if df.exists():
                 print(f"Extract {wt} -> {path_result}")
-                df = pd.read_csv(
-                    zf.open(wt, "r"),
-                    names=[
-                        "RECID",
-                        "RTYPE",
-                        "DOCNO",
-                        "SEQNO",
-                        "DIV",
-                        "PRDCD",
-                        "QTY",
-                        "PRICE",
-                        "GROSS",
-                        "CTERM",
-                        "DOCNO2",
-                        "ISTYPE",
-                        "INVNO",
-                        "TOKO",
-                        "DATE",
-                        "DATE2",
-                        "KETERANGAN",
-                        "PTAG",
-                        "CAT_COD",
-                        "LOKASI",
-                        "TGL1",
-                        "TGL2",
-                        "PPN",
-                        "TOKO_1",
-                        "DATE3",
-                        "DOCNO3",
-                        "SHOP",
-                        "PRICE_IDM",
-                        "PPNBM_IDM",
-                        "PPNRP_IDM",
-                        "LT",
-                        "RAK",
-                        "BAR",
-                        "BKP",
-                        "SUB_BKP",
-                        "PLUMD",
-                        "GROSS_JUAL",
-                        "PRICE_JUAL",
-                        "KODE_SUPPLIER",
-                        "DISC05",
-                        "RATE_PPN",
-                        "JAM",
-                    ],
-                    sep="|",
-                    header=None,
-                )
+                df = pd.read_csv(zf.open(wt, "r"), sep="|")
+                df.loc[df["FLAG_BO"] == "POT", "KETERANGAN"] = "NPT-T-"
+                
                 cek = len(df)
                 if cek > 0:
-                    df.to_csv(path_result + wt, index=False, sep="|", header=None)
+                    df.to_csv(path_result + wt, index=False, sep="|")
                     shutil.copy(path_result + wt, folder_path)
                 else:
                     continue
